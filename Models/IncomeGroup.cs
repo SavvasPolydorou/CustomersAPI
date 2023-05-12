@@ -2,7 +2,6 @@
 {
     public enum IncomeGroup
     {
-
         Low = 0,
         LowerMiddle = 1,
         UpperMiddle = 2,
