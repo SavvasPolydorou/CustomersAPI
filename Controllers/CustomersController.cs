@@ -1,12 +1,14 @@
 ﻿using CustomersAPI.Interfaces;
 using CustomersAPI.Models;
 using CustomersAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Xml.Linq;
 
 namespace CustomersAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CustomersController : ControllerBase
@@ -80,15 +82,15 @@ namespace CustomersAPI.Controllers
 
         }
 
-        [HttpGet("{name}/{emailAddress}")]
-        public async Task<ActionResult<IEnumerable<Customer>>> Search(string name, string emailAddress)
+        [HttpGet("[action]/{search}")]
+        public async Task<ActionResult<IEnumerable<Customer>>> Search(string search)
         {
-            var result = customerService.Search(name, emailAddress);
+            var result = customerService.Search(search);
             if (result.Any())
             {
                 return Ok(result);
             }
-            return NotFound(new { errorMessage = $"A customer whose name contains the word '{name}' and has an email address of '{emailAddress}' could not be found!" });
+            return NotFound(new { errorMessage = $"A customer whose name or email address contains the word '{search}' could not be found!" });
         }
         private bool CustomerExists(int Id)
         {
