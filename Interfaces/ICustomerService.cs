@@ -15,5 +15,7 @@ namespace CustomersAPI.Interfaces
         public Customer DeleteCustomer(int Id);
 
         public IEnumerable<Customer> Search(string search);
+
+        public IEnumerable<CustomerWithCompanyInfo> GetAllCustomersWithCompanyInformation();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CustomersAPI.Models
 {
@@ -52,6 +53,14 @@ namespace CustomersAPI.Models
         [DataType(DataType.Password)]
         [DefaultValue("Unhashed password")]
         public string Password { get; set; }
+
+        [Required(ErrorMessage = "Field can't be empty")]
+        [MaxLength(5, ErrorMessage = "A company's ticker symbol can only be 5 characters long!")]
+        [DefaultValue("AAPL")]
+        public string CompanyTickerSymbol { get; set; }
+
+        [Range(0, Double.MaxValue, ErrorMessage = "Please enter a logical number!")]
+        public decimal CurrentStockPrice { get;  set; }
         #endregion
     }
 }
