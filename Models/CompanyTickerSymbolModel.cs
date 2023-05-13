@@ -12,7 +12,7 @@
         public decimal Price { get; set; }
         public decimal ChangesPercentage { get; set; }       
         public decimal YearHigh { get; set; }
-        public decimal YearLow { get; set;}
+        public string YearLow { get; set;}
         #endregion
         //"symbol": "AAPL",
         //"name": "Apple Inc.",
