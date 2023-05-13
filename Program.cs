@@ -1,6 +1,8 @@
-﻿using CustomersAPI.Controllers;
-using CustomersAPI.Interfaces;
+﻿using CustomersAPI.Interfaces;
 using CustomersAPI.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -16,10 +18,34 @@ builder.Services.AddControllers()
 // Add services to the container.
 var services = builder.Services;
 services.AddScoped<ICustomerService, CustomerService>();
+
+var config = builder.Configuration;
+//add JWT configs
+
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(x =>
+{
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = config["JwtSettings:Issuer"],
+        ValidAudience = config["JwtSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey
+           (Encoding.UTF8.GetBytes(config["JwtSettings:Key"]!)),
+        ValidateIssuer = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true
+    };
+});
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
 
 var app = builder.Build();
 
@@ -31,7 +57,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+//order matters, first authentication and then authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

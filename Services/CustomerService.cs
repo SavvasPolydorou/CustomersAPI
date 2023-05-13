@@ -65,21 +65,22 @@ namespace CustomersAPI.Services
 
             return customerToDelete;
         }
-       public IEnumerable<Customer> Search(string name, string emailAddress)
+       public IEnumerable<Customer> Search(string search)
         {
             /* 
              IMPORTANT:
             Not sure if it should be a partial search or if the value should match exactly, I'll go with partial search.
             Also not sure if I'm meant to create two different functions, one with the name parameter and one with the email parameter.
-            It could also be the case where the emailAdddress is an optional parameter, but I'll leave both of them required for this example.
+            It could also be the case where the emailAdddress is an optional parameter, but for this example I'll provide one parameter
+            and use that against the name and email address properties.
              */
             
+            //for case purposes
+            search = search.ToLower();
             var allRecords = GetAllCustomers().ToList();
             var recordsToReturn = new List<Customer>();
-            if (!string.IsNullOrEmpty(name))
-                recordsToReturn = allRecords.Where(c => c.FullName.Contains(name)).ToList();
-            if(!string.IsNullOrEmpty(emailAddress))
-                recordsToReturn = recordsToReturn.Where(c => c.EmailAddress.Contains(emailAddress)).ToList();
+            if (!string.IsNullOrEmpty(search))
+                recordsToReturn = allRecords.Where(c => c.FullName.ToLower().Contains(search) || c.EmailAddress.ToLower().Contains(search)).ToList();      
             return recordsToReturn;
         }
 
