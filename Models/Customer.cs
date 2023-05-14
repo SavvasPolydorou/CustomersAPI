@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using CustomersAPI.Models.Enums;
 
 namespace CustomersAPI.Models
 {
@@ -10,9 +11,8 @@ namespace CustomersAPI.Models
         
         [Required(ErrorMessage = "Field can't be empty")]
         [Range(1, int.MaxValue, ErrorMessage = "Please enter a positive number!")]
-
         // you wouldn't normally specify a max value for an Id since this will limit the number of records, but for this instace it's ok
-        public int Id { get; set; }
+        public int Id { get;  set; }
 
         [Required(ErrorMessage = "Field can't be empty")]
         [MaxLength(50, ErrorMessage = "A full name can only be 50 characters long!")]
@@ -58,9 +58,6 @@ namespace CustomersAPI.Models
         [MaxLength(5, ErrorMessage = "A company's ticker symbol can only be 5 characters long!")]
         [DefaultValue("AAPL")]
         public string CompanyTickerSymbol { get; set; }
-
-        [Range(0, Double.MaxValue, ErrorMessage = "Please enter a logical number!")]
-        public decimal CurrentStockPrice { get;  set; }
         #endregion
     }
 }

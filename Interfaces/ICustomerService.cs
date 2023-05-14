@@ -4,18 +4,17 @@ namespace CustomersAPI.Interfaces
 {
     public interface ICustomerService
     {
-        public IEnumerable<Customer> GetAllCustomers();
-       
-        public Customer GetCustomerById(int Id);
+        public IEnumerable<CustomerDTO> GetAllCustomers();
 
-        public void AddCustomer(Customer customer);
+        public CustomerDTO GetCustomerById(int Id);
 
-        public Customer UpdateCustomer(Customer customer);
+        public CustomerDTO AddCustomer(Customer customer);
 
-        public Customer DeleteCustomer(int Id);
+        public CustomerDTO UpdateCustomer(Customer customer);
 
-        public IEnumerable<Customer> Search(string search);
+        public CustomerDTO DeleteCustomer(int Id);
 
-        public IEnumerable<CustomerWithCompanyInfo> GetAllCustomersWithCompanyInformation();
+        public IEnumerable<CustomerDTO> Search(string search);
+
     }
 }

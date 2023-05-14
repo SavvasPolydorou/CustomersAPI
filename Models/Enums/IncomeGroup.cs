@@ -1,4 +1,4 @@
-﻿namespace CustomersAPI
+﻿namespace CustomersAPI.Models.Enums
 {
     public enum IncomeGroup
     {

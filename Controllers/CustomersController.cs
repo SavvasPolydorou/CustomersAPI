@@ -4,10 +4,12 @@ using CustomersAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Xml.Linq;
 
 namespace CustomersAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CustomersController : ControllerBase
@@ -18,14 +20,16 @@ namespace CustomersAPI.Controllers
             customerService = _customerService;
         }
         [HttpGet]
-        public async Task<ActionResult<List<Customer>>> GetAllCustomers()
+        [SwaggerOperation(Summary = "Retrieves all customers with their associated company information")]
+        public async Task<ActionResult<List<CustomerDTO>>> GetAllCustomers()
         {
             var customers = customerService.GetAllCustomers();
             return Ok(customers);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Customer>> AddCustomer(Customer customer)
+        [SwaggerOperation(Summary = "Adds a new customer")]
+        public async Task<ActionResult<CustomerDTO>> AddCustomer(Customer customer)
         {
             if (ModelState.IsValid)
             {
@@ -33,18 +37,20 @@ namespace CustomersAPI.Controllers
                     return BadRequest($"A Customer with an ID of {customer.Id} already exists!");
 
 
-                customerService.AddCustomer(customer);
+                CustomerDTO customerDTO = customerService.AddCustomer(customer);
 
                 return CreatedAtAction(
                    actionName: nameof(GetCustomerById),
                    routeValues: new { id = customer.Id },
-                   value: customer
+                   value: customerDTO
                     );
+             
             }
             return BadRequest();
         }
         [HttpGet("{Id}")]
-        public async Task<ActionResult<Customer>> GetCustomerById(int Id)
+        [SwaggerOperation(Summary = "Retrieves a customer by their Id")]
+        public async Task<ActionResult<CustomerDTO>> GetCustomerById(int Id)
         {
 
             if (!CustomerExists(Id))
@@ -55,8 +61,9 @@ namespace CustomersAPI.Controllers
             return customerService.GetCustomerById(Id);
         }
 
-        [HttpPut("{Id}")]
-        public async Task<ActionResult<Customer>> UpdateCustomer(Customer customer)
+        [HttpPut]
+        [SwaggerOperation(Summary = "Updates an existing customer")]
+        public async Task<ActionResult<CustomerDTO>> UpdateCustomer(Customer customer)
         {
             var updatedCustomer = customerService.UpdateCustomer(customer);
             if (updatedCustomer == null)
@@ -69,7 +76,8 @@ namespace CustomersAPI.Controllers
         }
 
         [HttpDelete("{Id}")]
-        public async Task<ActionResult<Customer>> DeleteCustomer(int Id)
+        [SwaggerOperation(Summary = "Deletes an existing customer")]
+        public async Task<ActionResult<CustomerDTO>> DeleteCustomer(int Id)
         {
             var customerToDelete = customerService.DeleteCustomer(Id);
             if (customerToDelete == null)
@@ -82,7 +90,8 @@ namespace CustomersAPI.Controllers
         }
 
         [HttpGet("[action]/{search}")]
-        public async Task<ActionResult<IEnumerable<Customer>>> Search(string search)
+        [SwaggerOperation(Summary = "Partially searches for a customer by name or email address")]
+        public async Task<ActionResult<IEnumerable<CustomerDTO>>> Search(string search)
         {
             var result = customerService.Search(search);
             if (result.Any())

@@ -8,19 +8,19 @@ namespace CustomersAPI.Services
     public class CustomerService : ICustomerService
     {
 
-        private static List<Customer> customers = new List<Customer>();
-        private readonly string CustomerFilePath = "./Helpers/CustomerData.json";
-        public IEnumerable<Customer> GetAllCustomers()
+        private static List<CustomerDTO> customersDTO = new List<CustomerDTO>();
+        private readonly string filePath = "./Helpers/Data.json";
+        public IEnumerable<CustomerDTO> GetAllCustomers()
         {
-            using (StreamReader r = new StreamReader(CustomerFilePath))
+            using (StreamReader r = new StreamReader(filePath))
             {
                 string json = r.ReadToEnd();
-                customers = JsonConvert.DeserializeObject<List<Customer>>(json);
+                customersDTO = JsonConvert.DeserializeObject<List<CustomerDTO>>(json);
             }
-            return customers;
+            return customersDTO;
         }
 
-        public Customer GetCustomerById(int Id)
+        public CustomerDTO GetCustomerById(int Id)
         {
             /* For optimisation purposes, this may not be ideal. If the JSON file contained millions of records this would
              * slow the app down as it fetches all of the customers and then applies the filtering condition.
@@ -29,28 +29,35 @@ namespace CustomersAPI.Services
             return GetAllCustomers().Where(c => c.Id == Id).First();
         }
 
-        public void AddCustomer(Customer customer)
+        public CustomerDTO AddCustomer(Customer customer)
         {
-            //this means that the user left the currentStockPrice property to the default value which is not logical (0)
-            if (customer.CurrentStockPrice == 0m)
+            ////this means that the user left the currentStockPrice property to the default value which is not logical (0)
+            //if (customer.CurrentStockPrice == 0m)
+            //{
+            //    try
+            //    {
+            //        customer.CurrentStockPrice = CallExternalAPIForCurrentStockPrice(customer).Result;
+            //    }catch(Exception ex)
+            //    {
+            //        customer.CurrentStockPrice = 0;
+
+            //    }
+            //}
+            CustomerDTO customerDTO = new CustomerDTO(customer);
+            try
             {
-                try
-                {
-                    customer.CurrentStockPrice = CallExternalAPIForCurrentStockPrice(customer).Result;
-                }catch(Exception ex)
-                {
-                    customer.CurrentStockPrice = 0;
-
-                }
+                customerDTO.CompanyInformation = CallExternalAPIForCurrentStockPrice(customer.CompanyTickerSymbol).Result[0];
             }
-
-            customers.Add(customer);
+            catch (Exception ex)
+            {
+                customerDTO.CompanyInformation = null;
+            }
+            customersDTO.Add(customerDTO);
             RefreshJSONFile();
+            return customerDTO;
         }
 
-
-
-        public Customer UpdateCustomer(Customer customer)
+        public CustomerDTO UpdateCustomer(Customer customer)
         {
             var updatedCustomer = GetAllCustomers().ToArray().Where(c => c.Id == customer.Id).FirstOrDefault();
             if (updatedCustomer != null)
@@ -64,26 +71,36 @@ namespace CustomersAPI.Services
                 updatedCustomer.IncomeGroup = customer.IncomeGroup;
                 updatedCustomer.Occupation = customer.Occupation;
                 updatedCustomer.Password = customer.Password;
-                updatedCustomer.CompanyTickerSymbol = customer.CompanyTickerSymbol;
-                //no need to fetch the current price again as for the update as the user will specify the value they wish 
-                updatedCustomer.CurrentStockPrice = customer.CurrentStockPrice;
+                //fetch the company info if the ticker symbol has changed
+                if (!updatedCustomer.CompanyTickerSymbol.Equals(customer.CompanyTickerSymbol))
+                {
+                    try
+                    {
+                        updatedCustomer.CompanyTickerSymbol = customer.CompanyTickerSymbol;
+                        updatedCustomer.CompanyInformation = CallExternalAPIForCurrentStockPrice(customer.CompanyTickerSymbol).Result[0];
+                    }
+                    catch (Exception ex)
+                    {
+                        updatedCustomer.CompanyInformation = null;
+                    }
+                }
                 RefreshJSONFile();
             }
             return updatedCustomer;
         }
 
-        public Customer DeleteCustomer(int Id)
+        public CustomerDTO DeleteCustomer(int Id)
         {
             var customerToDelete = GetAllCustomers().ToArray().Where(c => c.Id == Id).FirstOrDefault();
             if (customerToDelete != null)
             {
-                customers.Remove(customerToDelete);
+                customersDTO.Remove(customerToDelete);
                 RefreshJSONFile();
             }
 
             return customerToDelete;
         }
-        public IEnumerable<Customer> Search(string search)
+        public IEnumerable<CustomerDTO> Search(string search)
         {
             /* 
              IMPORTANT:
@@ -93,63 +110,58 @@ namespace CustomersAPI.Services
             and use that against the name and email address properties.
              */
 
-            //for case purposes
+            //for case sensitivity purposes
             search = search.ToLower();
             var allRecords = GetAllCustomers().ToList();
-            var recordsToReturn = new List<Customer>();
+            var recordsToReturn = new List<CustomerDTO>();
             if (!string.IsNullOrEmpty(search))
                 recordsToReturn = allRecords.Where(c => c.FullName.ToLower().Contains(search) || c.EmailAddress.ToLower().Contains(search)).ToList();
             return recordsToReturn;
         }
 
-
-        public IEnumerable<CustomerWithCompanyInfo> GetAllCustomersWithCompanyInformation()
-        {
-            throw new NotImplementedException();
-        }
         //private helper method so that I dont repeat myself (DRY principle)
         private void RefreshJSONFile()
         {
-            using (StreamWriter file = File.CreateText(CustomerFilePath))
+            using (StreamWriter file = File.CreateText(filePath))
             {
                 JsonSerializer serializer = new JsonSerializer();
 
                 //serialize object directly into file stream
-                serializer.Serialize(file, customers);
+                serializer.Serialize(file, customersDTO);
             }
         }
 
         //private method for better code readability
-        private async Task<decimal> CallExternalAPIForCurrentStockPrice(Customer customer)
+        private async Task<List<CompanyTickerSymbolModel>> CallExternalAPIForCurrentStockPrice(string companyTickerSymbol)
         {
             //Should never be stored like this for security purposes, but it's ok for this assessment
             string apiKey = "5a9fe8ae378297a5a8dcdb6a6312d4b2";
             var url = "https://financialmodelingprep.com/api/v3/quote/";
-            var parameters = $"{customer.CompanyTickerSymbol}?apikey={apiKey}";
+            var parameters = $"{companyTickerSymbol}?apikey={apiKey}";
 
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri(url);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             HttpResponseMessage response = await client.GetAsync(parameters).ConfigureAwait(false);
-            var fetchedPrice = 0m;
+            var responseObject = new List<CompanyTickerSymbolModel>();
             if (response.IsSuccessStatusCode)
             {
                 var jsonString = await response.Content.ReadAsStringAsync();
-                var responseObject = JsonConvert.DeserializeObject<List<CompanyTickerSymbolModel>>(jsonString);
+                responseObject = JsonConvert.DeserializeObject<List<CompanyTickerSymbolModel>>(jsonString);
 
-               
+
                 //this means that the company ticker symbol that the user provided is not valid
                 if (responseObject.Count != 0)
                 {
                     System.Diagnostics.Debug.WriteLine("dame = " + (responseObject.FirstOrDefault().Price));
-                    fetchedPrice = responseObject.FirstOrDefault().Price;
+                    // fetchedPrice = responseObject.FirstOrDefault().Price;
                 }
             }
 
-            return fetchedPrice;
+            return responseObject;
         }
 
-       
+
     }
 }
