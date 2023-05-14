@@ -1,7 +1,7 @@
-﻿using CustomersAPI.Interfaces;
-using CustomersAPI.Models;
+﻿using CustomersAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.Annotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -16,20 +16,13 @@ namespace AuthenticationAndAuthorization.Controllers
         private const string tokenSecret = "JWTKeyShouldNotBeStoredHere";
         //way too long for a bearer token, but for the purpose of this assessment I'll leave it at 10 hours
         private static readonly TimeSpan tokenLifeTime = TimeSpan.FromHours(10);
-        private ICustomerService _customerService;
-        private IConfiguration _configuration;
-
-        public AuthenticateController(ICustomerService customerService, IConfiguration configuration)
-        {
-            _customerService = customerService;
-            _configuration = configuration;
-        }
 
         [HttpPost]
-        [Route("Authorize")]
-        public async Task<IActionResult> Authorize([FromBody] AuthenticationRequest request)
+        [Route("Authenticate")]
+        [SwaggerOperation(Summary = "Grab your bearer token here in order to call the rest of the endpoints")]
+        public async Task<IActionResult> Authenticate([FromBody] AuthenticationRequest request)
         {
-           var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(tokenSecret);
 
             var claims = new List<Claim>
@@ -37,7 +30,6 @@ namespace AuthenticationAndAuthorization.Controllers
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new(JwtRegisteredClaimNames.Sub, request.UserName),
             };
-
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -50,10 +42,7 @@ namespace AuthenticationAndAuthorization.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var jwt = tokenHandler.WriteToken(token);
-            return Ok(jwt);
+            return Ok(new { BearerToken = jwt });
         }
-
-
-
     }
 }

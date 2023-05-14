@@ -2,6 +2,7 @@
 using CustomersAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -43,7 +44,45 @@ builder.Services.AddAuthentication(x =>
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//configure JWT auth for swagger
+builder.Services.AddSwaggerGen(action =>
+{
+    action.EnableAnnotations();
+    action.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Axiom Assessment API (Savvas Polydorou)",
+        Version = "v1",
+        Description = "Here is the requested assessment by Stelios, source code below",
+        Contact = new OpenApiContact
+        {
+            Name = "Source code",
+            Url = new Uri("https://github.com/SavvasPolydorou/CustomersAPI")
+        }
+    });
+    action.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please call the Authenticate endpoint and grab your bearer token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "bearer"
+    });
+    action.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
+    });
+});
 
 
 
