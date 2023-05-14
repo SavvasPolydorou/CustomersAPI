@@ -22,7 +22,6 @@ services.AddScoped<ICustomerService, CustomerService>();
 
 var config = builder.Configuration;
 //add JWT configs
-
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -44,7 +43,7 @@ builder.Services.AddAuthentication(x =>
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-//configure JWT auth for swagger
+//configure JWT auth for swagger and add a bit of documentation
 builder.Services.AddSwaggerGen(action =>
 {
     action.EnableAnnotations();

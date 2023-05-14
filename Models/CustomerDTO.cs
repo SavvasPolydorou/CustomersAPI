@@ -1,7 +1,4 @@
 ﻿using CustomersAPI.Models.Enums;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace CustomersAPI.Models
 {

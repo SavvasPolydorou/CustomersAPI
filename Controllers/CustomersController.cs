@@ -1,11 +1,8 @@
 ﻿using CustomersAPI.Interfaces;
 using CustomersAPI.Models;
-using CustomersAPI.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Xml.Linq;
 
 namespace CustomersAPI.Controllers
 {
@@ -100,6 +97,8 @@ namespace CustomersAPI.Controllers
             }
             return NotFound(new { errorMessage = $"A customer whose name or email address contains the word '{search}' could not be found!" });
         }
+
+        //private helper function to check if a customer exists or not
         private bool CustomerExists(int Id)
         {
             return customerService.GetAllCustomers().Any(Customer => Customer.Id == Id);

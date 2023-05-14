@@ -7,11 +7,14 @@ namespace CustomersAPI.Services
 {
     public class CustomerService : ICustomerService
     {
-
+        //A DTO object is what the API will return (object wise). In the case of PUT and POST requests,
+        //the Customer object will be used in order to ignore company info. The API call will automatically map the properties
+        //to the DTO object.
         private static List<CustomerDTO> customersDTO = new List<CustomerDTO>();
         private readonly string filePath = "./Helpers/Data.json";
         public IEnumerable<CustomerDTO> GetAllCustomers()
         {
+            //read json file and desirialize objects
             using (StreamReader r = new StreamReader(filePath))
             {
                 string json = r.ReadToEnd();
@@ -31,18 +34,7 @@ namespace CustomersAPI.Services
 
         public CustomerDTO AddCustomer(Customer customer)
         {
-            ////this means that the user left the currentStockPrice property to the default value which is not logical (0)
-            //if (customer.CurrentStockPrice == 0m)
-            //{
-            //    try
-            //    {
-            //        customer.CurrentStockPrice = CallExternalAPIForCurrentStockPrice(customer).Result;
-            //    }catch(Exception ex)
-            //    {
-            //        customer.CurrentStockPrice = 0;
-
-            //    }
-            //}
+            //Create the DTO object and map the properties to the Customer object, and then by using the ticker symbol, call the external API
             CustomerDTO customerDTO = new CustomerDTO(customer);
             try
             {
@@ -53,6 +45,7 @@ namespace CustomersAPI.Services
                 customerDTO.CompanyInformation = null;
             }
             customersDTO.Add(customerDTO);
+            //Write to json file
             RefreshJSONFile();
             return customerDTO;
         }
@@ -84,6 +77,7 @@ namespace CustomersAPI.Services
                         updatedCustomer.CompanyInformation = null;
                     }
                 }
+                //Write to json file
                 RefreshJSONFile();
             }
             return updatedCustomer;
@@ -95,6 +89,7 @@ namespace CustomersAPI.Services
             if (customerToDelete != null)
             {
                 customersDTO.Remove(customerToDelete);
+                //Write to json file
                 RefreshJSONFile();
             }
 
@@ -112,8 +107,10 @@ namespace CustomersAPI.Services
 
             //for case sensitivity purposes
             search = search.ToLower();
+
             var allRecords = GetAllCustomers().ToList();
             var recordsToReturn = new List<CustomerDTO>();
+
             if (!string.IsNullOrEmpty(search))
                 recordsToReturn = allRecords.Where(c => c.FullName.ToLower().Contains(search) || c.EmailAddress.ToLower().Contains(search)).ToList();
             return recordsToReturn;
@@ -125,13 +122,12 @@ namespace CustomersAPI.Services
             using (StreamWriter file = File.CreateText(filePath))
             {
                 JsonSerializer serializer = new JsonSerializer();
-
-                //serialize object directly into file stream
+                //serialize output object directly into file stream
                 serializer.Serialize(file, customersDTO);
             }
         }
 
-        //private method for better code readability
+        //private method for better code readability and reusability
         private async Task<List<CompanyTickerSymbolModel>> CallExternalAPIForCurrentStockPrice(string companyTickerSymbol)
         {
             //Should never be stored like this for security purposes, but it's ok for this assessment
@@ -149,19 +145,9 @@ namespace CustomersAPI.Services
             {
                 var jsonString = await response.Content.ReadAsStringAsync();
                 responseObject = JsonConvert.DeserializeObject<List<CompanyTickerSymbolModel>>(jsonString);
-
-
-                //this means that the company ticker symbol that the user provided is not valid
-                if (responseObject.Count != 0)
-                {
-                    System.Diagnostics.Debug.WriteLine("dame = " + (responseObject.FirstOrDefault().Price));
-                    // fetchedPrice = responseObject.FirstOrDefault().Price;
-                }
             }
-
+            //if the response is not successful return an empty list
             return responseObject;
         }
-
-
     }
 }

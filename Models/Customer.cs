@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using CustomersAPI.Models.Enums;
 
 namespace CustomersAPI.Models
