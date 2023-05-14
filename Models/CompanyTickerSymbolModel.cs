@@ -14,6 +14,8 @@
         public decimal YearHigh { get; set; }
         public decimal YearLow { get; set; }
         #endregion
+
+        #region JSON Structure
         //"symbol": "AAPL",
         //"name": "Apple Inc.",
         //"price": 172.57,
@@ -36,5 +38,6 @@
         //"earningsAnnouncement": "2023-07-26T20:00:00.000+0000",
         //"sharesOutstanding": 15728700416,
         //"timestamp": 1683921605
+        #endregion
     }
 }
