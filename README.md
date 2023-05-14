@@ -5,10 +5,13 @@ Click [here](https://localhost:7257/swagger/index.html) to view API documentatio
 ## Running the project locally
 - Clone the project (or download a .zip version of it) and open it on Visual Studio (I'm using VS 2022)
 - Open the CustomersAPI.sln solution
-- Right click on CustomersAPI -> Set as startup project
-- If a "Trust ASP.NET Core SSL Certificate" prompt comes up, press Yes twice
-- 
+- Right click on CustomersAPI -> Set as startup project and run the app
+- If prompts come up, press Yes for all of them
+- If for whatever reason the Swagger page doesn't load on Chrome, try Edge
 - You should land on this URL (https://localhost:7257/swagger/index.html) on your preferred browser and should see the Swagger UI index page
+
+## Before you start exploring the endpoints
+In order to use the endpoints under Customers, you need to be authenticated. Expand the HTTP POST /Authenticate endpoint and press Try it out. I provided default values, all you need to do is scroll down and press Execute. Copy the bearer token from the response and scroll up to where it says Authorize (right hand corner), click it and paste your token in. You should now be authorized to use the endpoints under Customers.
 ## Important notes
 - Make sure to send a request to the Authenticate endpoint in order to grab a bearer token so you can use the rest of the endpoints. All of the  Customer endpoints need authentication in order to produce results.
 - The external API to fetch information about a company's ticker symbol can be found [here](https://site.financialmodelingprep.com/developer/docs/). If needed, register your own free account to grab an API key to use their API on this project. Alternatively, click [here](https://github.com/SavvasPolydorou/CustomersAPI/blob/380a1e0bf4441e4df69103255110ff0bf9084d5d/Services/CustomerService.cs#L134) to use my own personal API key, although a few requests are left and the account will be closed right after someone reviews this assessment.
